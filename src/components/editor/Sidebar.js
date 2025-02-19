@@ -32,6 +32,12 @@ const styles = StyleSheet.create({
 });
 
 export default class Sidebar extends PureComponent {
+  constructor(props) {
+    super(props);
+    this.state = {
+      barWidth: ''
+    };
+  }
   openTempoPopover = () => {
     this.props.togglePopover('tempo');
   };
@@ -47,6 +53,24 @@ export default class Sidebar extends PureComponent {
   openTrackSelect = () => {
     this.props.togglePopover('trackSelect');
   };
+  handleBarWidthChange = (event) => {
+    this.setState({ barWidth: event.target.value });
+  };
+  handleFixBar = () => {
+    const { barWidth } = this.state;
+
+    // Kiểm tra giá trị hợp lệ
+    if (!barWidth || isNaN(barWidth) || barWidth <= 0) {
+      alert('Vui lòng nhập một giá trị hợp lệ cho độ rộng của bar!');
+      return;
+    }
+
+    // Gọi hàm từ props để cập nhật độ rộng của tất cả bars
+    if (this.props.onFixBar) {
+      this.props.onFixBar(parseFloat(barWidth));
+    }
+  };
+
 
   render() {
     const { popoverOpen, togglePopover, canPlay } = this.props;
@@ -110,6 +134,15 @@ export default class Sidebar extends PureComponent {
           <UndoButton />
           <RedoButton />
         </SidebarGroup>
+        <input
+          placeholder="Bar width (px)"
+          value={this.state.barWidth}
+          onChange={this.handleBarWidthChange}
+          style={{ width: '100px', marginRight: '8px', padding: '4px' }}
+        />
+        <button onClick={this.handleFixBar} style={{ padding: '4px 8px' }}>
+          FIXED BAR
+        </button>
       </div>
     );
   }

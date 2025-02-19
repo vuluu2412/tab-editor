@@ -107,12 +107,12 @@ class MusicMeasure extends PureComponent {
           isValid={isValid}
           lastMeasure={isLastMeasure}
         />
-        {/*{measure.notes.map((note, noteIndex) =>*/}
-        {/*  this.renderMusicNote(note, noteIndex, yTop, playingNoteIndex)*/}
-        {/*)}*/}
-        {adjustedNotes.map((note, noteIndex) =>
+        {measure.notes.map((note, noteIndex) =>
           this.renderMusicNote(note, noteIndex, yTop, playingNoteIndex)
         )}
+        {/*{adjustedNotes.map((note, noteIndex) =>*/}
+        {/*  this.renderMusicNote(note, noteIndex, yTop, playingNoteIndex)*/}
+        {/*)}*/}
 
         {measure.indexOfRow === 0 && (
           <Clef y={yTop} strings={5} treble repeatBegin={measure.repeatBegin} />

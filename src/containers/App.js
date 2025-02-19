@@ -280,6 +280,12 @@ class App extends Component {
   togglePopover = popover => {
     this.setState({ popover: this.state.popover ? null : popover });
   };
+  handleUpdateBars = (newBarWidth) => {
+    console.log('Cập nhật chiều rộng tất cả bars:', newBarWidth);
+    this.setState({isFixed: true})
+
+  };
+
 
   render() {
     const { playingIndex, metronome, countdown } = this.props;
@@ -299,11 +305,13 @@ class App extends Component {
           canPlay={canPlay}
           popoverOpen={popover}
           togglePopover={this.togglePopover}
+          onFixBar={this.handleUpdateBars}
         />
         <Score
           scrollRef={el => {
             this.scoreScrollEl = el;
           }}
+          isFixed={this.state.isFixed}
         />
       </div>
     );
