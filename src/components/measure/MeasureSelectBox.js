@@ -2,8 +2,9 @@ import React, { PureComponent } from 'react';
 
 export default class SelectBox extends PureComponent {
   render() {
-    const { height, selectRange, measure } = this.props;
-    const { notes, width, measureIndex } = measure;
+    const { height, selectRange, measure, isFixed, newBarWidth } = this.props;
+    const { notes, measureIndex } = measure;
+    const width = isFixed ? newBarWidth : measure.width;
 
     if (!selectRange || !selectRange[measureIndex]) {
       return null;

@@ -35,44 +35,36 @@ class MusicMeasure extends PureComponent {
     ));
   }
 
-   calculateNotePositions(notes, measureWidth, beatsPerMeasure) {
-    // Đảm bảo các giá trị đầu vào hợp lệ
+   calculateNotePositions(notes, measureWidth, beatsPerMeasure, hasClef) {
     if (!Array.isArray(notes) || notes.length === 0) {
-      console.error("⚠️ Lỗi: notes không hợp lệ", notes);
       return [];
     }
 
     if (!measureWidth || isNaN(measureWidth)) {
-      console.error("⚠️ Lỗi: measureWidth không hợp lệ", measureWidth);
-      measureWidth = 200; // Giá trị mặc định
+      measureWidth = 200;
     }
 
     if (!beatsPerMeasure || isNaN(beatsPerMeasure)) {
-      console.error("⚠️ Lỗi: beatsPerMeasure không hợp lệ", beatsPerMeasure);
-      beatsPerMeasure = 4; // Mặc định 4/4
+      beatsPerMeasure = 4;
     }
 
-    let x = 0; // Bắt đầu từ vị trí đầu tiên
-    let currentBeat = 0; // Số nhịp hiện tại trong measure
+     const clefWidth = hasClef ? 60 : 30;
+
+     let x = clefWidth;
+     let currentBeat = 0;
 
     return notes.map((note, index) => {
       let noteX = x;
 
-      // Kiểm tra note.duration, gán mặc định nếu không có
-      let duration = note.duration || 1; // Mặc định là nốt đen
+      let duration = note.duration || 1;
       if (isNaN(duration)) {
-        console.warn(`⚠️ Lỗi: duration của note ${index} không hợp lệ`, note);
         duration = 1;
       }
 
-      // Tính độ rộng của nốt dựa trên trường độ (ví dụ: 1 nốt trắng = 2 nốt đen)
-      let noteWidth = (duration / beatsPerMeasure) * measureWidth;
+      let noteWidth = hasClef ? (duration / beatsPerMeasure) * (measureWidth - clefWidth) : (duration / beatsPerMeasure) * measureWidth;
 
-      // Cộng dồn vị trí x
       x += noteWidth;
       currentBeat += duration;
-
-      // Nếu hết một measure, reset x về đầu measure tiếp theo
       if (currentBeat >= beatsPerMeasure) {
         currentBeat = 0;
         x = Math.ceil(x / measureWidth) * measureWidth;
@@ -93,26 +85,30 @@ class MusicMeasure extends PureComponent {
       yTop,
       playingNoteIndex,
       isLastMeasure,
-      isValid
+      isValid,
+      isFixed,
+      newBarWidth
     } = this.props;
-    const adjustedNotes = this.calculateNotePositions(measure.notes, measure.width);
+    const widthNew = isFixed ? newBarWidth : measure.width;
+    const hasClef = measure.indexOfRow === 0;
+    const adjustedNotes = isFixed ? this.calculateNotePositions(measure.notes, widthNew,measure.timeSignature.beats, hasClef) : measure.notes;
 
 
     return (
-      <svg height={rowHeight} width={measure.width} className={css(styles.svg)}>
+      <svg height={rowHeight} width={widthNew} className={css(styles.svg)}>
         <Staff
-          measureWidth={measure.width}
+          measureWidth={widthNew}
           y={yTop}
           strings={5}
           isValid={isValid}
           lastMeasure={isLastMeasure}
         />
-        {measure.notes.map((note, noteIndex) =>
-          this.renderMusicNote(note, noteIndex, yTop, playingNoteIndex)
-        )}
-        {/*{adjustedNotes.map((note, noteIndex) =>*/}
+        {/*{measure.notes.map((note, noteIndex) =>*/}
         {/*  this.renderMusicNote(note, noteIndex, yTop, playingNoteIndex)*/}
         {/*)}*/}
+        {adjustedNotes.map((note, noteIndex) =>
+          this.renderMusicNote(note, noteIndex, yTop, playingNoteIndex)
+        )}
 
         {measure.indexOfRow === 0 && (
           <Clef y={yTop} strings={5} treble repeatBegin={measure.repeatBegin} />
@@ -129,7 +125,7 @@ class MusicMeasure extends PureComponent {
         </text>
         {measure.repeatEnd && (
           <RepeatSign
-            measureWidth={measure.width}
+            measureWidth={widthNew}
             strings={5}
             y={yTop + 25}
             repeatEnd={measure.repeatEnd}
@@ -137,7 +133,7 @@ class MusicMeasure extends PureComponent {
         )}
         {measure.repeatBegin && (
           <RepeatSign
-            measureWidth={measure.width}
+            measureWidth={widthNew}
             strings={5}
             y={yTop + 25}
             repeatEnd={false}

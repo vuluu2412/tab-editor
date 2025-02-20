@@ -258,7 +258,7 @@ class Score extends PureComponent {
             this.scoreRef = el;
           }}
         >
-          {measures.map((_, i) => <Measure key={i} measureIndex={i} />)}
+          {measures.map((_, i) => <Measure key={i} measureIndex={i} isFixed={this.props.isFixed} newBarWidth={this.props.newBarWidth} />)}
           <SelectBox
             height={height}
             width={width}

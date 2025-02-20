@@ -15,6 +15,7 @@ import { UndoButton, RedoButton } from './UndoRedo';
 import ImportButton, { ExportButton } from './ImportExportButton';
 import TuningButton from './TuningButton';
 import LayoutButton from './LayoutButton';
+import BarWidthInput from "./BarWidthButton";
 
 const styles = StyleSheet.create({
   sidebar: {
@@ -35,7 +36,7 @@ export default class Sidebar extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      barWidth: ''
+      barWidth: ""
     };
   }
   openTempoPopover = () => {
@@ -58,14 +59,9 @@ export default class Sidebar extends PureComponent {
   };
   handleFixBar = () => {
     const { barWidth } = this.state;
-
-    // Kiểm tra giá trị hợp lệ
     if (!barWidth || isNaN(barWidth) || barWidth <= 0) {
-      alert('Vui lòng nhập một giá trị hợp lệ cho độ rộng của bar!');
       return;
     }
-
-    // Gọi hàm từ props để cập nhật độ rộng của tất cả bars
     if (this.props.onFixBar) {
       this.props.onFixBar(parseFloat(barWidth));
     }
@@ -74,6 +70,7 @@ export default class Sidebar extends PureComponent {
 
   render() {
     const { popoverOpen, togglePopover, canPlay } = this.props;
+    const { barWidth } = this.state;
 
     return (
       <div className={css(styles.sidebar)}>
@@ -134,15 +131,14 @@ export default class Sidebar extends PureComponent {
           <UndoButton />
           <RedoButton />
         </SidebarGroup>
-        <input
-          placeholder="Bar width (px)"
-          value={this.state.barWidth}
-          onChange={this.handleBarWidthChange}
-          style={{ width: '100px', marginRight: '8px', padding: '4px' }}
-        />
-        <button onClick={this.handleFixBar} style={{ padding: '4px 8px' }}>
-          FIXED BAR
-        </button>
+        <SidebarGroup title="Measure Settings">
+          <BarWidthInput
+            barWidth={barWidth}
+            onChange={this.handleBarWidthChange}
+            onFix={this.handleFixBar}
+          />
+        </SidebarGroup>
+
       </div>
     );
   }

@@ -18,12 +18,14 @@ class Measure extends PureComponent {
       yTop,
       tuning,
       selectRange,
-      rowHeight
+      rowHeight,
+      isFixed,
+      newBarWidth
     } = this.props;
     const measureHeight = rowHeight + tuning.length * 20;
 
     return (
-      <svg height={measureHeight} width={measure.width}>
+      <svg height={measureHeight} width={isFixed ? newBarWidth : measure.width}>
         <MusicMeasure
           measure={measure}
           playingNoteIndex={playingNoteIndex}
@@ -31,6 +33,8 @@ class Measure extends PureComponent {
           isValid={isValid}
           rowHeight={rowHeight}
           yTop={yTop}
+          isFixed={isFixed}
+          newBarWidth={newBarWidth}
         />
         <TabMeasure
           measure={measure}
@@ -39,12 +43,16 @@ class Measure extends PureComponent {
           isValid={isValid}
           rowHeight={rowHeight}
           stringCount={tuning.length}
+          isFixed={isFixed}
+          newBarWidth={newBarWidth}
         />
         {selectRange && (
           <MeasureSelectBox
             measure={measure}
             selectRange={selectRange}
             height={measureHeight}
+            isFixed={isFixed}
+            newBarWidth={newBarWidth}
           />
         )}
       </svg>

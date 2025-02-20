@@ -84,7 +84,7 @@ class TabMeasure extends PureComponent {
   }
 
   renderTabNote(note, noteIndex) {
-    const { playingNoteIndex, stringCount, displayOption } = this.props;
+    const { playingNoteIndex, stringCount, displayOption, measure } = this.props;
 
     const color = playingNoteIndex === noteIndex ? '#f9423a' : 'black';
     const y = stringCount * 6.5 + 6;
@@ -97,7 +97,7 @@ class TabMeasure extends PureComponent {
           key={noteIndex}
           noteIndex={noteIndex}
           color={color}
-          x={note.x}
+          x={measure.notes[noteIndex].x}
           y={y}
           note={note}
         />
@@ -112,6 +112,9 @@ class TabMeasure extends PureComponent {
       }
       const string = stringIndex === -1 ? i : note.string[stringIndex];
       const y = 95 - 13 * (i + 6 - stringCount);
+      const musicNote = measure.musicNotes ? measure.musicNotes[noteIndex] : null;
+      const x = musicNote ? musicNote.x : measure.notes[noteIndex].x;
+
       return (
         <TabNote
           onClick={this.onClick}
@@ -123,8 +126,47 @@ class TabMeasure extends PureComponent {
           displayOption={displayOption}
           note={note}
           stringIndex={string}
+          x={x} // 🔥 Đảm bảo tọa độ khớp với MusicMeasure
         />
       );
+    });
+  }
+  calculateNotePositions(notes, measureWidth, beatsPerMeasure, hasClef) {
+    if (!Array.isArray(notes) || notes.length === 0) {
+      return [];
+    }
+
+    if (!measureWidth || isNaN(measureWidth)) {
+      measureWidth = 200;
+    }
+
+    if (!beatsPerMeasure || isNaN(beatsPerMeasure)) {
+      beatsPerMeasure = 4;
+    }
+
+    const clefWidth = hasClef ? 60 : 30;
+
+    let x = clefWidth;
+    let currentBeat = 0;
+
+    return notes.map((note, index) => {
+      let noteX = x;
+
+      let duration = note.duration || 1;
+      if (isNaN(duration)) {
+        duration = 1;
+      }
+
+      let noteWidth = hasClef ? (duration / beatsPerMeasure) * (measureWidth - clefWidth) : (duration / beatsPerMeasure) * measureWidth;
+
+      x += noteWidth;
+      currentBeat += duration;
+      if (currentBeat >= beatsPerMeasure) {
+        currentBeat = 0;
+        x = Math.ceil(x / measureWidth) * measureWidth;
+      }
+
+      return { ...note, x: noteX };
     });
   }
 
@@ -138,18 +180,23 @@ class TabMeasure extends PureComponent {
       rowHeight,
       isValid,
       isLastMeasure,
-      cursor
+      cursor,
+      isFixed,
+      newBarWidth
     } = this.props;
+    const widthNew = isFixed ? newBarWidth : measure.width;
+    const hasClef = measure.indexOfRow === 0;
+    const adjustedNotes = isFixed ? this.calculateNotePositions(measure.notes, widthNew,measure.timeSignature.beats, hasClef) : measure.notes;
 
     return (
       <svg
         y={rowHeight}
         ref={this.setRef}
         height={stringCount * 25}
-        width={measure.width}
+        width={widthNew}
       >
         <Staff
-          measureWidth={measure.width}
+          measureWidth={widthNew}
           y={0}
           strings={stringCount}
           isValid={isValid}
@@ -158,10 +205,13 @@ class TabMeasure extends PureComponent {
         <rect
           onClick={this.onSvgClick}
           height={stringCount * 25}
-          width={measure.width}
+          width={widthNew}
           opacity={0}
         />
-        {measure.notes.map((note, noteIndex) =>
+        {/*{measure.notes.map((note, noteIndex) =>*/}
+        {/*  this.renderTabNote(note, noteIndex)*/}
+        {/*)}*/}
+        {adjustedNotes.map((note, noteIndex) =>
           this.renderTabNote(note, noteIndex)
         )}
         {displayOption === 'tab' && (
@@ -198,7 +248,7 @@ class TabMeasure extends PureComponent {
         {cursor && this.renderCursor(cursor, measure, stringCount)}
         {measure.repeatEnd && (
           <RepeatSign
-            measureWidth={measure.width}
+            measureWidth={widthNew}
             strings={stringCount}
             y={25}
             repeatEnd={true}
@@ -206,7 +256,7 @@ class TabMeasure extends PureComponent {
         )}
         {measure.repeatBegin && (
           <RepeatSign
-            measureWidth={measure.width}
+            measureWidth={widthNew}
             strings={stringCount}
             y={25}
             repeatEnd={false}

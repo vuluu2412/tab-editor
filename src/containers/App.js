@@ -43,7 +43,7 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    this.state = { openModal: null };
+    this.state = { openModal: null, isFixed: false, newBarWidth: 100 };
   }
 
   componentWillMount() {
@@ -281,8 +281,7 @@ class App extends Component {
     this.setState({ popover: this.state.popover ? null : popover });
   };
   handleUpdateBars = (newBarWidth) => {
-    console.log('Cập nhật chiều rộng tất cả bars:', newBarWidth);
-    this.setState({isFixed: true})
+    this.setState({ isFixed: true, newBarWidth: newBarWidth });
 
   };
 
@@ -312,6 +311,7 @@ class App extends Component {
             this.scoreScrollEl = el;
           }}
           isFixed={this.state.isFixed}
+          newBarWidth={this.state.newBarWidth}
         />
       </div>
     );
