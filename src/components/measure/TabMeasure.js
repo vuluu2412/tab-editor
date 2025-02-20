@@ -131,7 +131,7 @@ class TabMeasure extends PureComponent {
       );
     });
   }
-  calculateNotePositions(notes, measureWidth, beatsPerMeasure, hasClef) {
+  calculateNotePositions(notes, measureWidth) {
     if (!Array.isArray(notes) || notes.length === 0) {
       return [];
     }
@@ -140,32 +140,23 @@ class TabMeasure extends PureComponent {
       measureWidth = 200;
     }
 
-    if (!beatsPerMeasure || isNaN(beatsPerMeasure)) {
-      beatsPerMeasure = 4;
-    }
+    const durations = notes.map(note => {
+      if (note.duration === "w") return 4;
+      if (note.duration === "h") return 2;
+      if (note.duration === "q") return 1;
+      return 1;
+    });
 
-    const clefWidth = hasClef ? 60 : 30;
+    const availableWidth = measureWidth ;
 
-    let x = clefWidth;
-    let currentBeat = 0;
+    const totalDuration = durations.reduce((sum, d) => sum + d, 0);
 
+    const baseSpacing = availableWidth / (totalDuration + 1);
+
+    let x = baseSpacing;
     return notes.map((note, index) => {
       let noteX = x;
-
-      let duration = note.duration || 1;
-      if (isNaN(duration)) {
-        duration = 1;
-      }
-
-      let noteWidth = hasClef ? (duration / beatsPerMeasure) * (measureWidth - clefWidth) : (duration / beatsPerMeasure) * measureWidth;
-
-      x += noteWidth;
-      currentBeat += duration;
-      if (currentBeat >= beatsPerMeasure) {
-        currentBeat = 0;
-        x = Math.ceil(x / measureWidth) * measureWidth;
-      }
-
+      x += durations[index] * baseSpacing;
       return { ...note, x: noteX };
     });
   }
@@ -185,8 +176,7 @@ class TabMeasure extends PureComponent {
       newBarWidth
     } = this.props;
     const widthNew = isFixed ? newBarWidth : measure.width;
-    const hasClef = measure.indexOfRow === 0;
-    const adjustedNotes = isFixed ? this.calculateNotePositions(measure.notes, widthNew,measure.timeSignature.beats, hasClef) : measure.notes;
+    const adjustedNotes = isFixed ? this.calculateNotePositions(measure.notes, widthNew) : measure.notes;
 
     return (
       <svg
