@@ -58,7 +58,7 @@ class MusicMeasure extends PureComponent {
     const baseSpacing = availableWidth / (totalDuration + 1);
 
     let x = baseSpacing;
-    const WIDTH_NOTE = 16;
+    const WIDTH_NOTE = 6;
     return notes.map((note, index) => {
       let noteX = x - WIDTH_NOTE;
       x += durations[index] * baseSpacing;
